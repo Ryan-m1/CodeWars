@@ -2,10 +2,11 @@
 
 # CodeWars
 
-> 记录刷题之旅
+> 码农翻身
 
-* LeetCode每日一题，周赛
-* CodeWars题库
+* 捕捉生活中美好瞬间，记录于此。
+* 记录在学习中慢慢成长的过程。
 
 [Gitee](https://gitee.com/Mkingm)
 [Blog](http://www.mryan.xyz/)
+[Get Started](_sidebar.md)
