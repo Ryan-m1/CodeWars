@@ -1,8 +1,8 @@
-section.cover .cover-main{
+section.cover .cover-main {
     z-index: 100;
 }
-section.cover.has-mask .mask{
-    background-color: #fff;
+section.cover.has-mask .mask {
+    background-color: #dedede;
     opacity: .1!important;
     position: absolute;
     top: 0;
@@ -10,3 +10,58 @@ section.cover.has-mask .mask{
     width: 100%;
 }
 
+section.cover p{
+    color: #ffffff;
+    font-size: 30px;
+    font-family: "Yu Gothic UI Semilight";
+}
+
+element.style {
+    background-color: var(--theme-color, #42b983);
+    color: #ffffff;
+    font-family: 'Lobster', cursive;
+}
+
+* {
+    -webkit-font-smoothing: antialiased;
+    -webkit-overflow-scrolling: touch;
+    -webkit-tap-highlight-color: rgba(0,0,0,0);
+    -webkit-text-size-adjust: none;
+    -webkit-touch-callout: none;
+    box-sizing: border-box;
+
+}
+user agent stylesheet
+li {
+    display: list-item;
+    text-align: -webkit-match-parent;
+}
+section.cover ul{
+    color: rgba(229, 229, 229, 0.87);
+    font-size: 20px;
+}
+
+section.cover h1 .anchor span {
+    font-family: 'Lobster', cursive;
+    color: #b70000;
+    font-size: 60px;
+}
+
+section.cover .cover-main > p:last-child a:last-child {
+    background-color: var(--theme-color, #42b983);
+    color: #fff;
+}
+
+section.cover h2 .anchor span {
+    font-family: 'Lobster', cursive;
+    font-size: 24px;
+    color: var(--theme-color);
+}
+
+section.cover .cover-main > p:last-child a .iconfont {
+    font-size: 1em;
+}
+
+.sidebar > h1 a {
+    font-family: 'Lobster', cursive;
+}

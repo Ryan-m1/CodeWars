@@ -7,6 +7,9 @@
 * 捕捉生活中美好瞬间，记录于此。
 * 记录在学习中慢慢成长的过程。
 
-[Get Started](_sidebar.md)
 [Gitee](https://gitee.com/Mkingm?_blank)
 [Blog](http://www.mryan.xyz/?_blank)
+[Get Started](_sidebar.md)
+
+<!-- background image -->
+![](_media/bg2.jpg)
