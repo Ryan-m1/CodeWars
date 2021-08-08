@@ -49,13 +49,13 @@ Mybatis的功能架构分为三层：
 
 SqlSession--》作为MyBatis⼯作的主要顶层API，表示和数据库交互的会话，完成必要数 据库增删改查功能。
 
-Executor--》MyBatis执⾏器，是MyBatis调度的核⼼，负责SQL语句的⽣成和查询缓存的维护。
+Executor--》调度执行StatementHandler、ParameterHandler、ResultHandler执行相应的SQL语句
 
 StatementHandler--》封装了JDBC Statement操作，负责对JDBC statement的操作，如设置参数、将Statement结果集转换成List集合。
 
-ParameterHandler--》负责对用户传递的参数转换成JDBC Statement所需要的参数。
+ParameterHandler--》负责对用户传递的参数转换成JDBC Statement所需要的参数。处理SQL参数。
 
-ResultSetHandler--》负责将JDBC返回的ResultSet结果集对象转换成List类型的集合。
+ResultSetHandler--》结果集ResultSet封装处理返回。
 
 TypeHandler--》负责java数据类型和jdbc数据类型之间的映射和转换。
 
@@ -64,4 +64,23 @@ MappedStatement--》 MappedStatement维护了⼀条＜select | update | delete |
 SqlSource--》负责根据⽤户传递的parameterObject，动态地⽣成SQL语句，将信息封装到BoundSql对象中，并返回。
 
 BoundSql--》表示动态⽣成的SQL语句以及相应的参数信息。
+
+## 3. 执行SQL语句总体流程
+
+1. 加载配置并初始化 触发条件：加载配置⽂件 配置来源于两个地⽅，⼀个是配置⽂件(主配置⽂件conf.xml,mapper⽂件*.xml)
+   ,—个是java代码中的注解，将主配置⽂件内容解析封装到Configuration,将sql的配置信息加载成为⼀个MappedStatement 对象，存储在内存之中
+2. 接收调⽤请求 触发条件：调⽤Mybatis提供的API传⼊参数：为SQL的ID和传⼊参数对象处理过程：将请求传递给下层的请求处理层进⾏处理。
+3. 处理操作请求 触发条件：API接⼝层传递请求过来传⼊参数：为SQL的ID和传⼊参数对象
+
+处理过程：
+
+- 根据SQL的ID查找对应的MappedStatement对象。
+- 根据传⼊参数对象解析MappedStatement对象，得到最终要执⾏的SQL和执行传⼊参数。
+- 获取数据库连接，根据得到的最终SQL语句和执⾏传⼊参数到数据库执⾏，并得到执⾏结果。
+- 根据MappedStatement对象中的结果映射配置对得到的执⾏结果进⾏转换处理，并得到最终的处理结果。
+- 释放连接资源。
+- 返回处理结果
+
+将最终的处理结果返回。
+
 
