@@ -39,7 +39,8 @@ element.style {
     -webkit-text-size-adjust: none;
     -webkit-touch-callout: none;
     box-sizing: border-box;
-    color: rgba(227, 227, 227, 0.89);
+    /*正文颜色*/
+    color: rgba(255, 255, 255, 0.75);
     font-family: "Yu Gothic UI Semilight";
 }
 
