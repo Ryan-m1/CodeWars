@@ -12,4 +12,4 @@
 [Get Started](_sidebar.md)
 
 <!-- background image -->
-![](_media/bg2.jpg)
+![](_media/img/bg2.jpg)
