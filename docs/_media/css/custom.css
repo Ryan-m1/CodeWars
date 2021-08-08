@@ -39,7 +39,7 @@ element.style {
     -webkit-text-size-adjust: none;
     -webkit-touch-callout: none;
     box-sizing: border-box;
-    color: rgba(255, 255, 255, 0.71);
+    color: rgba(227, 227, 227, 0.89);
     font-family: "Yu Gothic UI Semilight";
 }
 
@@ -73,7 +73,7 @@ section.cover ul{
 
 section.cover h1 .anchor span {
     font-family: 'Lobster', cursive;
-    color: rgba(187, 0, 0, 0.55);
+    color: rgba(217, 4, 4, 0.65);
     font-size: 50px;
 }
 
