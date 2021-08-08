@@ -10,6 +10,16 @@ section.cover.has-mask .mask {
     width: 100%;
 }
 
+.markdown-section a {
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.markdown-section h1, .markdown-section h2, .markdown-section h3, .markdown-section h4, .markdown-section strong {
+    color: rgba(255, 255, 255, 0.75);
+    font-weight: 600;
+}
+
 section.cover p{
     color: #ffffff;
     font-size: 25px;
@@ -29,6 +39,7 @@ element.style {
     -webkit-text-size-adjust: none;
     -webkit-touch-callout: none;
     box-sizing: border-box;
+    color: rgba(255, 255, 255, 0.71);
     font-family: "Yu Gothic UI Semilight";
 }
 
@@ -83,4 +94,13 @@ section.cover .cover-main > p:last-child a .iconfont {
 
 .sidebar > h1 a {
     font-family: 'Lobster', cursive;
+}
+
+.sidebar ul li a {
+    color: #ffffff;
+    font-size: 14px;
+    overflow: hidden;
+    text-decoration: none;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
