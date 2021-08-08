@@ -28,9 +28,11 @@
         repo: 'https://gitee.com/Mkingm?_blank',
         coverpage: true,
         subMaxLevel: 3,
+        notFoundPage: true,
         loadSidebar: true,
         themeColor: '#c7455f',
         countable: true,
+        onlyCover: false,
         fontsize: '1.0em',
         color: 'rgb(255,255,255)',
         language: 'chinese',
@@ -46,7 +48,22 @@
         },
         alias: {
             '/*/_sidebar.md': '/_sidebar.md'
-        }
+        },
+        plugins: [
+            function(hook) {
+                var footer = [
+                    '<hr/>',
+                    '<footer>',
+                    '<span><a href="https://gitee.com/Mkingm/CodeWars?_blank">CodeWars</a> &copy;2021.</span>',
+                    '<span>Powered By <a href="http://www.mryan.xyz/index.php/aboutme.html?_blank">MRyan</span>',
+                    '</footer>'
+                ].join('');
+
+                hook.afterEach(function(html) {
+                    return html + footer;
+                });
+            }
+        ]
     }
 </script>
 <!-- Docsify v4 -->
