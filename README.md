@@ -1,6 +1,8 @@
 # Description
 
-[我是链接  点我点我！]( https://ryan_ma.gitee.io/codewars)
+[链接在此！Gitee Pages！]( https://ryan_ma.gitee.io/codewars)
+
+[链接在此！Github Pages！]( https://ryan-m1.github.io/CodeWars/#/)
 
 > 码农翻身
 * 🌞捕捉生活中美好瞬间，记录于此。
