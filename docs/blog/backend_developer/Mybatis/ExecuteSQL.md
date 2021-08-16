@@ -38,9 +38,9 @@ Mybatis的功能架构分为三层：
 
    MyBatis和数据库的交互有两种方式：
 
-    - 使用传统的MyBatis提供的API
+   - 使用传统的MyBatis提供的API
 
-    - 使用Mapper代理的方式
+   - 使用Mapper代理的方式
 2. 数据处理层：负责具体的SQL查找、SQL解析、SQL执行和执行结果映射处理等。它主要的目的是根据调用的请求完成⼀次数据库操作。
 3. 基础⽀撑层：负责最基础的功能⽀撑，包括连接管理、事务管理、配置加载和缓存处理，这些都是共用的东西，将他们抽取出来作为最基础的组件。为上层的数据处理层提供最基础的支撑。
 
@@ -288,7 +288,7 @@ public final class MappedStatement {
     private List<ResultMap> resultMaps;
 ```
 也就是说一个自定义SQL Mapper配置文件的标签(select、insert、update、delete等）会在初始化配置文件时被解析封装成多个MappedStatement对象，并存储在Configuration对象的mappedStatements属性中，MappedStatement映射
- KEY：`${namespace}.${id}`=类全限定名+方法名
+KEY：`${namespace}.${id}`=类全限定名+方法名
  ***
 
 衔接上文，在SqlSessionFactoryBuilder#build方法执行完parser.parse()逻辑，会创建DefaultSqlSessionFactory对象
@@ -335,9 +335,9 @@ public class DefaultSqlSession implements SqlSession {
 DefaultSqlSession中的两个重要属性，其一Configuration就是上面讲过的MyBatis配置核心，另一个Executor则是执行器，源码openSession中实际上也是交给了Executor来专门执行操作
 ```java
 Executor也是⼀个接⼝，他有三个常⽤的实现类：
-BatchExecutor (重⽤语句并执⾏批量更新)
-ReuseExecutor (重⽤预处理语句 prepared statements)
-SimpleExecutor (普通的执⾏器，默认)
+        BatchExecutor (重⽤语句并执⾏批量更新)
+        ReuseExecutor (重⽤预处理语句 prepared statements)
+        SimpleExecutor (普通的执⾏器，默认)
 ```
 
 ```java
@@ -389,24 +389,24 @@ SimpleExecutor (普通的执⾏器，默认)
 
 ```java
 
- @Override
-    public <E> List<E> selectList(String statement, Object parameter) {
+@Override
+public <E> List<E> selectList(String statement, Object parameter) {
         return this.selectList(statement, parameter, RowBounds.DEFAULT);
-    }
-
-
- private <E> List<E> selectList(String statement, Object parameter, RowBounds rowBounds, ResultHandler handler) {
-        try {
-            //根据传⼊的全限定名+⽅法名从映射的Map中取出MappedStatement对象
-            MappedStatement ms = configuration.getMappedStatement(statement);
-            //调⽤Executor中的⽅法处理  RowBounds是⽤来逻辑分⻚ wrapCollection(parameter)是⽤来装饰集合或者数组参数
-            return executor.query(ms, wrapCollection(parameter), rowBounds, handler);
-        } catch (Exception e) {
-            throw ExceptionFactory.wrapException("Error querying database.  Cause: " + e, e);
-        } finally {
-            ErrorContext.instance().reset();
         }
-    }
+
+
+private <E> List<E> selectList(String statement, Object parameter, RowBounds rowBounds, ResultHandler handler) {
+        try {
+        //根据传⼊的全限定名+⽅法名从映射的Map中取出MappedStatement对象
+        MappedStatement ms = configuration.getMappedStatement(statement);
+        //调⽤Executor中的⽅法处理  RowBounds是⽤来逻辑分⻚ wrapCollection(parameter)是⽤来装饰集合或者数组参数
+        return executor.query(ms, wrapCollection(parameter), rowBounds, handler);
+        } catch (Exception e) {
+        throw ExceptionFactory.wrapException("Error querying database.  Cause: " + e, e);
+        } finally {
+        ErrorContext.instance().reset();
+        }
+        }
 
 ```
 从源码里其实可以看出，在Executor执行真正的query方法之前，从上一步封装好的Configuration中根据全限定名+方法名从映射Map中取出对应的MappedStatement对象，传递给Executor执行
@@ -600,50 +600,50 @@ StatementHandler对象封装了JDBC Statement操作，负责对JDBC statement的
 
 ```java
     @Override
-    public void parameterize(Statement statement) throws SQLException {
+public void parameterize(Statement statement) throws SQLException {
         //使⽤ParameterHandler对象来完成对Statement的设值
         parameterHandler.setParameters((PreparedStatement) statement);
-    }
+        }
 
 
-     @Override
-    public void setParameters(PreparedStatement ps) {
+@Override
+public void setParameters(PreparedStatement ps) {
         ErrorContext.instance().activity("setting parameters").object(mappedStatement.getParameterMap().getId());
         // 遍历ParameterMapping数组
         List<ParameterMapping> parameterMappings = boundSql.getParameterMappings();
         if (parameterMappings != null) {
-            for (int i = 0; i < parameterMappings.size(); i++) {
-                // 获得ParameterMapping对象
-                ParameterMapping parameterMapping = parameterMappings.get(i);
-                if (parameterMapping.getMode() != ParameterMode.OUT) {
-                    Object value;
-                    String propertyName = parameterMapping.getProperty();
-                    if (boundSql.hasAdditionalParameter(propertyName)) { // issue #448 ask first for additional params
-                        value = boundSql.getAdditionalParameter(propertyName);
-                    } else if (parameterObject == null) {
-                        value = null;
-                    } else if (typeHandlerRegistry.hasTypeHandler(parameterObject.getClass())) {
-                        value = parameterObject;
-                    } else {
-                        MetaObject metaObject = configuration.newMetaObject(parameterObject);
-                        value = metaObject.getValue(propertyName);
-                    }
-                    // 获得typeHandler、jdbcType属性
-                    TypeHandler typeHandler = parameterMapping.getTypeHandler();
-                    JdbcType jdbcType = parameterMapping.getJdbcType();
-                    if (value == null && jdbcType == null) {
-                        jdbcType = configuration.getJdbcTypeForNull();
-                    }
-                    // 设置 ? 占位符的参数
-                    try {
-                        typeHandler.setParameter(ps, i + 1, value, jdbcType);
-                    } catch (TypeException | SQLException e) {
-                        throw new TypeException("Could not set parameters for mapping: " + parameterMapping + ". Cause: " + e, e);
-                    }
-                }
-            }
+        for (int i = 0; i < parameterMappings.size(); i++) {
+        // 获得ParameterMapping对象
+        ParameterMapping parameterMapping = parameterMappings.get(i);
+        if (parameterMapping.getMode() != ParameterMode.OUT) {
+        Object value;
+        String propertyName = parameterMapping.getProperty();
+        if (boundSql.hasAdditionalParameter(propertyName)) { // issue #448 ask first for additional params
+        value = boundSql.getAdditionalParameter(propertyName);
+        } else if (parameterObject == null) {
+        value = null;
+        } else if (typeHandlerRegistry.hasTypeHandler(parameterObject.getClass())) {
+        value = parameterObject;
+        } else {
+        MetaObject metaObject = configuration.newMetaObject(parameterObject);
+        value = metaObject.getValue(propertyName);
         }
-    }
+        // 获得typeHandler、jdbcType属性
+        TypeHandler typeHandler = parameterMapping.getTypeHandler();
+        JdbcType jdbcType = parameterMapping.getJdbcType();
+        if (value == null && jdbcType == null) {
+        jdbcType = configuration.getJdbcTypeForNull();
+        }
+        // 设置 ? 占位符的参数
+        try {
+        typeHandler.setParameter(ps, i + 1, value, jdbcType);
+        } catch (TypeException | SQLException e) {
+        throw new TypeException("Could not set parameters for mapping: " + parameterMapping + ". Cause: " + e, e);
+        }
+        }
+        }
+        }
+        }
 ```
 
 从上述的代码可以看到StatementHandler的parameterize(Statement)方法调用了ParameterHandler的setParameters(statement)方法，ParameterHandler的setParameters(Statement )⽅法负责根据我们输⼊的参数，对statement对象的?占位符处进行赋值。
@@ -651,7 +651,7 @@ StatementHandler对象封装了JDBC Statement操作，负责对JDBC statement的
 进入PreparedStatementHandler#query方法
 ```java
    @Override
-    public <E> List<E> query(Statement statement, ResultHandler resultHandler) throws SQLException {
+public <E> List<E> query(Statement statement, ResultHandler resultHandler) throws SQLException {
         // 1.调⽤preparedStatement。execute()方法，
         // 将resultSet交给ResultSetHandler处理
         PreparedStatement ps = (PreparedStatement) statement;
@@ -659,7 +659,7 @@ StatementHandler对象封装了JDBC Statement操作，负责对JDBC statement的
         ps.execute();
         //2.使⽤ ResultHandler 来处理 ResultSet
         return resultSetHandler.handleResultSets(ps);
-    }
+        }
 ```
 上述代码我们可以看出，StatementHandler的query方法其实是调用了ResultSetHandler的handleResultSets方法，handleResultSets方法会将Statement语句执行后生成的resultSet结果集转换成List结果集
 具体操作如下源码所示：
@@ -735,7 +735,7 @@ StatementHandler对象封装了JDBC Statement操作，负责对JDBC statement的
         IOrderMapper mapper = sqlSession.getMapper(IOrderMapper.class);
         List<Order> orderAndUser = mapper.findOrderAndUser();
         for (Order order : orderAndUser) {
-            System.out.println(order);
+        System.out.println(order);
         }
 ```
 
@@ -802,17 +802,17 @@ public class MapperRegistry {
 
 ```java
     @SuppressWarnings("unchecked")
-    protected T newInstance(MapperProxy<T> mapperProxy) {
+protected T newInstance(MapperProxy<T> mapperProxy) {
         return (T) Proxy.newProxyInstance(mapperInterface.getClassLoader(), new Class[]{mapperInterface}, mapperProxy);
-    }
+        }
 
-    //MapperProxyFactory类中的newInstance方法
-    public T newInstance(SqlSession sqlSession) {
-        // 创建了JDK动态代理的invocationHandler接口的实现类mapperProxy
-        final MapperProxy<T> mapperProxy = new MapperProxy<>(sqlSession, mapperInterface, methodCache);
+//MapperProxyFactory类中的newInstance方法
+public T newInstance(SqlSession sqlSession) {
+// 创建了JDK动态代理的invocationHandler接口的实现类mapperProxy
+final MapperProxy<T> mapperProxy = new MapperProxy<>(sqlSession, mapperInterface, methodCache);
         // 调用了重载方法
         return newInstance(mapperProxy);
-    }
+        }
 
 ```
 
@@ -823,24 +823,24 @@ public class MapperProxy<T> implements InvocationHandler, Serializable {
 霍，这一打眼，没跑了，JDK动态代理，实现了InvocationHandler接口重写了invoke方法，进入invoke方法查看源码
 ```java
   @Override
-    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         try {
-            // 如果是 Object 定义的方法，直接调用
-            if (Object.class.equals(method.getDeclaringClass())) {
-                return method.invoke(this, args);
-            } else {
-                // 重点在这：MapperMethod最终调用了执行的方法
-                return cachedInvoker(method).invoke(proxy, method, args, sqlSession);
-            }
-        } catch (Throwable t) {
-            throw ExceptionUtil.unwrapThrowable(t);
+        // 如果是 Object 定义的方法，直接调用
+        if (Object.class.equals(method.getDeclaringClass())) {
+        return method.invoke(this, args);
+        } else {
+        // 重点在这：MapperMethod最终调用了执行的方法
+        return cachedInvoker(method).invoke(proxy, method, args, sqlSession);
         }
-    }
+        } catch (Throwable t) {
+        throw ExceptionUtil.unwrapThrowable(t);
+        }
+        }
 
-     @Override
-        public Object invoke(Object proxy, Method method, Object[] args, SqlSession sqlSession) throws Throwable {
-            //关键
-            return mapperMethod.execute(sqlSession, args);
+@Override
+public Object invoke(Object proxy, Method method, Object[] args, SqlSession sqlSession) throws Throwable {
+        //关键
+        return mapperMethod.execute(sqlSession, args);
         }
 ```
 分析到这里胜利的曙光终于到出现了
@@ -854,68 +854,68 @@ mapperMethod.execute方法实际做的就是“分发”的一个过程，根据
         Object result;
         //判断mapper中的方法类型，最终调用的还是SqlSession中的方法
         switch (command.getType()) {
-            case INSERT: {
-                // 转换参数
-                Object param = method.convertArgsToSqlCommandParam(args);
-                // 执行 INSERT 操作
-                // 转换 rowCount
-                result = rowCountResult(sqlSession.insert(command.getName(), param));
-                break;
-            }
-            case UPDATE: {
-                // 转换参数
-                Object param = method.convertArgsToSqlCommandParam(args);
-                // 转换 rowCount
-                result = rowCountResult(sqlSession.update(command.getName(), param));
-                break;
-            }
-            case DELETE: {
-                // 转换参数
-                Object param = method.convertArgsToSqlCommandParam(args);
-                // 转换 rowCount
-                result = rowCountResult(sqlSession.delete(command.getName(), param));
-                break;
-            }
-            case SELECT:
-                // 无返回，并且有 ResultHandler 方法参数，则将查询的结果，提交给 ResultHandler 进行处理
-                if (method.returnsVoid() && method.hasResultHandler()) {
-                    executeWithResultHandler(sqlSession, args);
-                    result = null;
-                    // 执行查询，返回列表
-                } else if (method.returnsMany()) {
-                    result = executeForMany(sqlSession, args);
-                    // 执行查询，返回 Map
-                } else if (method.returnsMap()) {
-                    result = executeForMap(sqlSession, args);
-                    // 执行查询，返回 Cursor
-                } else if (method.returnsCursor()) {
-                    result = executeForCursor(sqlSession, args);
-                    // 执行查询，返回单个对象
-                } else {
-                    // 转换参数
-                    Object param = method.convertArgsToSqlCommandParam(args);
-                    // 查询单条
-                    result = sqlSession.selectOne(command.getName(), param);
-                    if (method.returnsOptional() &&
-                        (result == null || !method.getReturnType().equals(result.getClass()))) {
-                        result = Optional.ofNullable(result);
-                    }
-                }
-                break;
-            case FLUSH:
-                result = sqlSession.flushStatements();
-                break;
-            default:
-                throw new BindingException("Unknown execution method for: " + command.getName());
+        case INSERT: {
+        // 转换参数
+        Object param = method.convertArgsToSqlCommandParam(args);
+        // 执行 INSERT 操作
+        // 转换 rowCount
+        result = rowCountResult(sqlSession.insert(command.getName(), param));
+        break;
+        }
+        case UPDATE: {
+        // 转换参数
+        Object param = method.convertArgsToSqlCommandParam(args);
+        // 转换 rowCount
+        result = rowCountResult(sqlSession.update(command.getName(), param));
+        break;
+        }
+        case DELETE: {
+        // 转换参数
+        Object param = method.convertArgsToSqlCommandParam(args);
+        // 转换 rowCount
+        result = rowCountResult(sqlSession.delete(command.getName(), param));
+        break;
+        }
+        case SELECT:
+        // 无返回，并且有 ResultHandler 方法参数，则将查询的结果，提交给 ResultHandler 进行处理
+        if (method.returnsVoid() && method.hasResultHandler()) {
+        executeWithResultHandler(sqlSession, args);
+        result = null;
+        // 执行查询，返回列表
+        } else if (method.returnsMany()) {
+        result = executeForMany(sqlSession, args);
+        // 执行查询，返回 Map
+        } else if (method.returnsMap()) {
+        result = executeForMap(sqlSession, args);
+        // 执行查询，返回 Cursor
+        } else if (method.returnsCursor()) {
+        result = executeForCursor(sqlSession, args);
+        // 执行查询，返回单个对象
+        } else {
+        // 转换参数
+        Object param = method.convertArgsToSqlCommandParam(args);
+        // 查询单条
+        result = sqlSession.selectOne(command.getName(), param);
+        if (method.returnsOptional() &&
+        (result == null || !method.getReturnType().equals(result.getClass()))) {
+        result = Optional.ofNullable(result);
+        }
+        }
+        break;
+        case FLUSH:
+        result = sqlSession.flushStatements();
+        break;
+default:
+        throw new BindingException("Unknown execution method for: " + command.getName());
         }
         // 返回结果为 null ，并且返回类型为基本类型，则抛出 BindingException 异常
         if (result == null && method.getReturnType().isPrimitive() && !method.returnsVoid()) {
-            throw new BindingException("Mapper method '" + command.getName()
-                + " attempted to return null from a method with a primitive return type (" + method.getReturnType() + ").");
+        throw new BindingException("Mapper method '" + command.getName()
+        + " attempted to return null from a method with a primitive return type (" + method.getReturnType() + ").");
         }
         // 返回结果
         return result;
-    }
+        }
 ```
 
 到此为止，对MyBatis的诞生，架构设计，初始化源码剖析，执行SQL语句源码剖析，MyBatis的代理模式，已经分析完了。
@@ -926,5 +926,13 @@ mapperMethod.execute方法实际做的就是“分发”的一个过程，根据
 下篇文章：🏆深入浅出MyBatis三级缓存
 
 
+**本文已收录到CodeWars系列，欢迎各位Star，持续输出高质量技术文章**
+[链接点我！](https://gitee.com/Ryan_ma/CodeWars)
 
+
+**更多技术文章，请关注公众号，让我们一起进步吧！**
+
+![](https://img-blog.csdnimg.cn/2020120416583873.png#pic_center#pic_center)
+
+![在这里插入图片描述](https://img-blog.csdnimg.cn/15fe47205ba64925a4c71b7a2f61f452.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM1NDE2MjE0,size_16,color_FFFFFF,t_70)
 
