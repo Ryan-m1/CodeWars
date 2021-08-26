@@ -173,6 +173,45 @@ public void update(Object object) {
     }
 ```
 
+CacheKey重写了quals()方法
+
+```java
+  @Override
+    public boolean equals(Object object) {
+        if (this == object) {
+            return true;
+        }
+        if (!(object instanceof CacheKey)) {
+            return false;
+        }
+
+        final CacheKey cacheKey = (CacheKey) object;
+
+        if (hashcode != cacheKey.hashcode) {
+            return false;
+        }
+        if (checksum != cacheKey.checksum) {
+            return false;
+        }
+        if (count != cacheKey.count) {
+            return false;
+        }
+
+        // 比较 updateList 数组
+        //除去hashcode、checksum和count，如果两条SQL的updateList中下列五个值相同，即可以认为是相同的SQL-》Statement Id + Offset + Limmit + Sql + Params
+        for (int i = 0; i < updateList.size(); i++) {
+            Object thisObject = updateList.get(i);
+            Object thatObject = cacheKey.updateList.get(i);
+            if (!ArrayUtil.equals(thisObject, thatObject)) {
+                return false;
+            }
+        }
+        return true;
+    }
+```
+
+除去hashcode、checksum和count，如果两条SQL的updateList中下列五个值相同，即可以认为是相同的SQL
+
 如果你还是不理解，那么就看如下图案例
 
 ![image-20210825225241796](img/image-20210825225241796.png)
@@ -488,6 +527,8 @@ public void close(boolean forceRollback) {
     }
 ```
 
+**总结翻看完一级缓存的声明周期，其实会发现，一级缓存的生命周期其实和SqlSession声明周期一致。**
+
 来吧，跑一个测试代码来验证刚才所说**一级缓存在执行update()、commit()、rollback()、close() 或者SqlSession回收时都会销毁**。
 
 ```java
@@ -523,7 +564,7 @@ public void close(boolean forceRollback) {
 
 还记得文章刚开始的带入问题吗，一级缓存有什么不足吗？
 
-1. 使用一级缓存的时候作用在同一个SqlSession下，因为缓存不能跨会话共享，不同的会话之间对于相同的数据可能有不一样的缓存。当在有多个会话或者分布式环境下，可能会存在脏数据的问题。那这种问题如何解决呢？
+1. 使用一级缓存的时候作用在同一个SqlSession下，因为缓存不能跨会话共享，不同的会话之间对于相同的数据可能有不一样的缓存。当在有多个会话或者分布式环境下，可能会存在脏数据的问题。那这种问题如何解决呢？可以将一级缓存级别设置为Statement的级别
 2. 一级缓存的数据结构是HashMap，众所周知HashMap是线程不安全的，那一级缓存是否也是线程不安全，但由于一级缓存只存作用在同一个sqlSession中，所以基本上不会出现线程问题。
 
 关于一级缓存作用域为同一个SqlSession下的局限性，MyBatis提供了二级缓存。
