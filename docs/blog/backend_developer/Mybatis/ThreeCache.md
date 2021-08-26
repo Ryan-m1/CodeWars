@@ -488,7 +488,36 @@ public void close(boolean forceRollback) {
     }
 ```
 
-****
+来吧，跑一个测试代码来验证刚才所说**一级缓存在执行update()、commit()、rollback()、close() 或者SqlSession回收时都会销毁**。
+
+```java
+    /**
+     * 测试一级缓存commit()是否重置缓存
+     */
+    @Test
+    public void TEST_QUERY_COMMIT_BY_FIRST_CACHE() {
+        //代理模式获取代理类
+        IUserMapper userMapper = sqlSession.getMapper(IUserMapper.class);
+        //第⼀次sql语句查询 将查询结果放入缓存中
+        User user1 = userMapper.findById(1);
+        System.out.println("第一次查询：" + user1);
+        //更新操作 并提交sqlSession
+        user1.setUsername("MRyan666");
+        userMapper.updateById(user1);
+        sqlSession.commit();
+        User user2 = userMapper.findById(1);
+        System.out.println("第二次查询：" + user2);
+        System.out.println(user1 == user2);
+    }
+```
+
+运行结果如下 石锤了：
+
+由于中途SqlSession进行了commit操作导致缓存被销毁，于是第二次查询还是会查一次库：
+
+![image-20210826145232963](img/image-20210826145232963.png)
+
+***
 
 到此为止一级缓存已经被揭开了神秘的面纱。
 
