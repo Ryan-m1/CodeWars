@@ -6,11 +6,7 @@
 
 众所周知，和数据库打交道避免不了磁盘IO操作，那如果频繁的IO操作一定会对性能造成影响，所以减少与数据库的交互次数从而降低数据库压力进而提升查询效率是必要的。缓存是其中一种实现方式，简单的理解其实缓存就是内存中专门的一块区域，当从数据库中查询到一些数据将其放入缓存中，下次查询相同的数据时可以直接从缓存中获取数据即可，这样可减少了一步和数据库交互的过程。
 
-
-
 MyBatis提供了三级缓存机制，虽然MyBatis的缓存机制有些鸡肋，大部分开发人员多数情况都只会使用MyBatis默认缓存配置，又虽然MyBatis缓存机制有一些不足之处，出于学习还是决定写下此文章。
-
-
 
 ## 2. 一级缓存
 
@@ -562,6 +558,8 @@ public void close(boolean forceRollback) {
 
 到此为止一级缓存已经被揭开了神秘的面纱。
 
+### 2.3 总结：
+
 还记得文章刚开始的带入问题吗，一级缓存有什么不足吗？
 
 1. 使用一级缓存的时候作用在同一个SqlSession下，因为缓存不能跨会话共享，不同的会话之间对于相同的数据可能有不一样的缓存。当在有多个会话或者分布式环境下，可能会存在脏数据的问题。那这种问题如何解决呢？可以将一级缓存级别设置为Statement的级别
@@ -571,13 +569,626 @@ public void close(boolean forceRollback) {
 
 ## 3. 二级缓存
 
-> 本文尚未结束，请等待作者更新本文
+MyBatis提供了二级缓存，不过二级缓存不是默认开启的，若需开启二级缓存，需要做一些配置操作（可自定义二级缓存）
+
+二级缓存构建在一级缓存之上，一级缓存是和SqlSession绑定，而二级缓存是和Mapper具体的命名空间绑定，二级缓存是全局性的，一个Mapper中有一个Cache，相同的Mapper中多个不同的MappedStatement共用一个Cache。
+
+### 3.1 开启二级缓存
+
+1. 开启全局二级缓存配置
+
+   ```xml
+   <settings>
+      <setting name="cacheEnabled" value="true"/>
+   </settings>
+   ```
+
+2. 在需要使用二级缓存的sqlMapConfig Mapper配置文件中配置标签
+
+   ```xml
+   <cache></cache>
+   ```
+
+3. 在CURDmapper标签中配置useCache=true
+
+   ```xml
+   <select id="findById" resultType="com.mryan.pojo.User" useCache="true">
+       select * from user where id = #{id}
+   </select>
+   ```
+
+由此设置二级缓存将被开启，接下来跑个简单测试类来了解下二级缓存的使用
+
+### 3.2 测试二级缓存
+
+刚才也说了二级缓存作用范围在命名空间也就是namepace下的所有操作语句都影响这用一个Cache。
+
+接下来通过几个测试代码，来看一看二级缓存到底是什么吧。
+
+**1）开启二级缓存，进行查询但不进行事务提交**
+
+```java
+/**
+     * 测试二级缓存 sqlSession不commit 二级缓存不生效
+     */
+    @Test
+    public void TEXT_SECOND_LEVEL_CACHE_INVALIDATION() {
+        SqlSession sqlSession1 = sqlSessionFactory.openSession();
+        SqlSession sqlSession2 = sqlSessionFactory.openSession();
+
+        IUserMapper mapper1 = sqlSession1.getMapper(IUserMapper.class);
+        IUserMapper mapper2 = sqlSession2.getMapper(IUserMapper.class);
+
+        User user1 = mapper1.findById(1);
+
+        User user2 = mapper2.findById(1);
+
+        System.out.println("第一次查询：" + user1);
+        System.out.println("第二次查询：" + user2);
+        System.out.println(user1 == user2);
+    }
+```
+
+上述代码执行结果如下：
+
+![image-20210826233901877](img/image-20210826233901877.png)
+
+然而发现二级缓存并没有起到作用，并没有生效，也就是说sqlSession1查询完数据之后，sqlSession2再进行同样的查询时并没有像想象中一样直接从缓存中获取数据，而是重新查库。
+
+**2）上述同样的测试代码，不过将sqlSession1提交事务 这时二级缓存生效吗**?
+
+```java
+ /**
+     * 测试二级缓存 sqlSession commit 二级缓存生效
+     */
+    @Test
+    public void TEXT_SECOND_LEVEL_CACHE() {
+        SqlSession sqlSession1 = sqlSessionFactory.openSession();
+        SqlSession sqlSession2 = sqlSessionFactory.openSession();
+
+        IUserMapper mapper1 = sqlSession1.getMapper(IUserMapper.class);
+        IUserMapper mapper2 = sqlSession2.getMapper(IUserMapper.class);
+
+        User user1 = mapper1.findById(1);
+        //sqlSession提交 二级缓存生效
+        sqlSession1.commit();
+        User user2 = mapper2.findById(1);
+
+        System.out.println("第一次查询：" + user1);
+        System.out.println("第二次查询：" + user2);
+        System.out.println(user1 == user2);
+    }
+```
+
+![image-20210826234232133](img/image-20210826234232133.png)
+
+很明显，当提交事务之后 二级缓存生效了，那这是什么原理呢，稍后阅读源码的时候会详细说明。
+
+### 3.3 源码分析
+
+在上文[原文链接](ExecuteSQL.md)分析SQL语句执行的过程中，我们了解了配置文件的加载和解析，其中缓存相关并没有去做说明，在本文会详细说明。
+
+其中xml解析工作实际上是交给XMLConfigBuilder#parse()方法实现,其中对配置文件中缓存相关的解析逻辑如下XMLConfigBuilder#cacheElement()
+
+```java
+  // 解析 <cache /> 标签
+    private void cacheElement(XNode context) throws Exception {
+        if (context != null) {
+            //解析<cache/>标签的type属性，这里我们可以自定义cache的实现类，比如redisCache，如果没有自定义，这里使用和一级缓存相同的PERPETUAL
+            String type = context.getStringAttribute("type", "PERPETUAL");
+            Class<? extends Cache> typeClass = typeAliasRegistry.resolveAlias(type);
+            // 获得负责过期的 Cache 实现类
+            String eviction = context.getStringAttribute("eviction", "LRU");
+            Class<? extends Cache> evictionClass = typeAliasRegistry.resolveAlias(eviction);
+            // 清空缓存的频率。0 代表不清空
+            Long flushInterval = context.getLongAttribute("flushInterval");
+            // 缓存容器大小
+            Integer size = context.getIntAttribute("size");
+            // 是否序列化
+            boolean readWrite = !context.getBooleanAttribute("readOnly", false);
+            // 是否阻塞
+            boolean blocking = context.getBooleanAttribute("blocking", false);
+            // 获得 Properties 属性
+            Properties props = context.getChildrenAsProperties();
+            // 创建 Cache 对象
+            builderAssistant.useNewCache(typeClass, evictionClass, flushInterval, size, readWrite, blocking, props);
+        }
+    }
+```
+
+构建Cache对象逻辑如下：
+
+```java
+/**
+     * 创建 Cache 对象
+     *
+     * @param typeClass 负责存储的 Cache 实现类
+     * @param evictionClass 负责过期的 Cache 实现类
+     * @param flushInterval 清空缓存的频率。0 代表不清空
+     * @param size 缓存容器大小
+     * @param readWrite 是否序列化
+     * @param blocking 是否阻塞
+     * @param props Properties 对象
+     * @return Cache 对象
+     */
+    public Cache useNewCache(Class<? extends Cache> typeClass,
+                             Class<? extends Cache> evictionClass,
+                             Long flushInterval,
+                             Integer size,
+                             boolean readWrite,
+                             boolean blocking,
+                             Properties props) {
+
+        // 1.生成Cache对象
+        Cache cache = new CacheBuilder(currentNamespace)
+                //这里如果我们定义了<cache/>中的type，就使用自定义的Cache,否则使用和一级缓存相同的PerpetualCache
+                .implementation(valueOrDefault(typeClass, PerpetualCache.class))
+                .addDecorator(valueOrDefault(evictionClass, LruCache.class))
+                .clearInterval(flushInterval)
+                .size(size)
+                .readWrite(readWrite)
+                .blocking(blocking)
+                .properties(props)
+                .build();
+        // 2.添加到Configuration中
+        configuration.addCache(cache);
+        // 3.并将cache赋值给MapperBuilderAssistant.currentCache
+        currentCache = cache;
+        return cache;
+    }
+```
+
+这里会发现每一个Mapper.xml文件都会被解析，创建一次Cache对象（就是二级缓存），存入Configuration中，并且赋值给MapperBuilderAssistant.currentCache
+
+接着在XMLMapperBuilder#configurationElement()解析Mapper节点的时候将生成的Cache包装到MappedStatement中
+
+```java
+// 解析 `<mapper />` 节点
+    private void configurationElement(XNode context) {
+        try {
+            //省略上面代码
+            // 解析 <select /> <insert /> <update /> <delete /> 节点们
+          	// 重点看这里！！！！
+            // 这里会将生成的Cache包装到对应的MappedStatement
+         buildStatementFromContext(context.evalNodes("select|insert|update|delete"));
+        } catch (Exception e) {
+            throw new BuilderException("Error parsing Mapper XML. The XML location is '" + resource + "'. Cause: " + e, e);
+        }
+    }
+```
+
+```java
+ // 解析 <select /> <insert /> <update /> <delete /> 节点们
+    private void buildStatementFromContext(List<XNode> list) {
+        if (configuration.getDatabaseId() != null) {
+            buildStatementFromContext(list, configuration.getDatabaseId());
+        }
+        buildStatementFromContext(list, null);
+        // 上面两块代码，可以简写成 buildStatementFromContext(list, configuration.getDatabaseId());
+    }
+
+    private void buildStatementFromContext(List<XNode> list, String requiredDatabaseId) {
+        //遍历 <select /> <insert /> <update /> <delete /> 节点们
+        for (XNode context : list) {
+            // 创建 XMLStatementBuilder 对象，执行解析
+            final XMLStatementBuilder statementParser = new XMLStatementBuilder(configuration, builderAssistant, context, requiredDatabaseId);
+            try {
+
+                // 每一条执行语句转换成一个MappedStatement
+                statementParser.parseStatementNode();
+            } catch (IncompleteElementException e) {
+                // 解析失败，添加到 configuration 中
+                configuration.addIncompleteStatement(statementParser);
+            }
+        }
+    }
+```
+
+省略中间繁琐的过程，列出调用路径，感兴趣的小伙伴可以自行阅读源码、
+
+buildStatementFromContext#buildStatementFromContext()->XMLStatementBuilder#parseStatementNode()->MapperBuilderAssistant#addMappedStatement()
+
+在addMappedStatement方法中会构建MappedStatemet对象并将MappedStatement添加到Configuration对象中。
+
+```java
+ // 构建 MappedStatement 对象
+    public MappedStatement addMappedStatement(
+            String id,
+            SqlSource sqlSource,
+            StatementType statementType,
+            SqlCommandType sqlCommandType,
+            Integer fetchSize,
+            Integer timeout,
+            String parameterMap,
+            Class<?> parameterType,
+            String resultMap,
+            Class<?> resultType,
+            ResultSetType resultSetType,
+            boolean flushCache,
+            boolean useCache,
+            boolean resultOrdered,
+            KeyGenerator keyGenerator,
+            String keyProperty,
+            String keyColumn,
+            String databaseId,
+            LanguageDriver lang,
+            String resultSets) {
+        //省略代码
+        // 创建 MappedStatement 对象
+        MappedStatement statement = statementBuilder.build();
+        // 添加到 configuration 中
+        configuration.addMappedStatement(statement);
+        return statement;
+    }
+```
+
+至此缓存标签的解析任务就结束了
+
+配置文件加载解析之后肯定是要进行查询了，查询实际调用的是Executor执行器，而MyBatis二级缓存实现了Executor->CachingExecutor
+
+```java
+ @Override
+    public <E> List<E> query(MappedStatement ms, Object parameterObject, RowBounds rowBounds, ResultHandler resultHandler) throws SQLException {
+        // 获得 BoundSql 对象
+        BoundSql boundSql = ms.getBoundSql(parameterObject);
+        // 创建 CacheKey 对象
+        CacheKey key = createCacheKey(ms, parameterObject, rowBounds, boundSql);
+        // 查询
+        return query(ms, parameterObject, rowBounds, resultHandler, key, boundSql);
+    }
+
+
+@Override
+    public <E> List<E> query(MappedStatement ms, Object parameterObject, RowBounds rowBounds, ResultHandler resultHandler, CacheKey key, BoundSql boundSql)
+            throws SQLException {
+        //从mappedStatement中获取Cache（二级缓存是从MappedStatement中获取，MappedStatement存在于全局配置中，会有多个CachingExecutor获取，可能会出现线程安全问题，例如脏读）
+        //也就是我们上面解析Mapper中<cache/>标签中创建的，它保存在Configration中
+        //我们在初始化解析xml时分析过每一个MappedStatement都有一个Cache对象，就是这里
+        Cache cache = ms.getCache();
+        // 如果配置文件中没有配置 <cache>，则cache为空
+        if (cache != null) {
+            //对应配置文件中的flushCache="true" 如果设置了flushCache为true则每次查询都会刷新缓存
+            flushCacheIfRequired(ms);
+            //对应配置文件中的useCache 如果设置了useCache为true则走二级缓存
+            if (ms.isUseCache() && resultHandler == null) {
+                // 暂时忽略，存储过程相关
+                ensureNoOutParams(ms, boundSql);
+                @SuppressWarnings("unchecked")
+                // 从二级缓存中，获取结果
+                List<E> list = (List<E>) tcm.getObject(cache, key);
+                if (list == null) {
+                    // 如果没有值，则执行查询，这个查询实际也是先走一级缓存查询，一级缓存也没有的话，则进行DB查询
+                    list = delegate.query(ms, parameterObject, rowBounds, resultHandler, key, boundSql);
+                    // 缓存查询结果 重点！！！！！
+                    tcm.putObject(cache, key, list); // issue #578 and #116
+                }
+                // 如果存在，则直接返回结果
+                return list;
+            }
+        }
+        // 不使用缓存，则从数据库中查询(如果不是第一次查会查一级缓存)
+        return delegate.query(ms, parameterObject, rowBounds, resultHandler, key, boundSql);
+    }
+```
+
+其中的重点逻辑，如果flushCache="true" 则每次都会刷新缓存。
+
+由于二级缓存是从MappedStatement中获取，是存在于全局配置，如果被多个CachingExecutor获取到，则一定会出现线程安全问题导致脏读，所以MyBatis为解决这个问题，在查询的过程中提供了TransactionalCacheManager作为事务缓存管理器
+
+```java
+
+/**
+ * {@link TransactionalCache} 事务缓存管理器
+ *
+ * @author Clinton Begin
+ */
+public class TransactionalCacheManager {
+
+    /**
+     * // Cache 与 TransactionalCache 的映射关系表
+     */
+    private final Map<Cache, TransactionalCache> transactionalCaches = new HashMap<>();
+ 
+    /**
+     * 添加 Cache + KV ，到缓存中
+     *
+     * @param cache Cache 对象
+     * @param key 键
+     * @param value 值
+     */
+    public void putObject(Cache cache, CacheKey key, Object value) {
+        // 直接存入TransactionalCache的缓存中
+        getTransactionalCache(cache).putObject(key, value);
+    }
+
+    /**
+     * 提交所有 TransactionalCache
+     */
+    public void commit() {
+        for (TransactionalCache txCache : transactionalCaches.values()) {
+            txCache.commit();
+        }
+    }
+}
+```
+
+实际上TransactionalCacheManager内部维护了一个Cache实例和TransactionalCache之间的映射，
+
+在CachingExecutor查询时缓存查询结果并事务提交之前会将所有从数据库中查询的结果放到entriesToAddOnCommit缓存集合中而它并不是真正的缓存对象Cache。只有查询的时候会直接从delegate（真正的缓存对象中查询），详细解释请看下述代码
+
+```java
+public class TransactionalCache implements Cache {
+
+    /**
+     * 委托的 Cache 对象。
+     * <p>
+     * 实际上，就是二级缓存 Cache 对象。
+     */
+    private final Cache delegate;
+
+    /**
+     * 在事务被提交前，所有从数据库中查询的结果将缓存在此集合中
+     */
+    private final Map<Object, Object> entriesToAddOnCommit;
+    /**
+     * 在事务被提交前，当缓存未命中时，CacheKey 将会被存储在此集合中
+     */
+    private final Set<Object> entriesMissedInCache;
+
+    @Override
+    public Object getObject(Object key) {
+        // 查询的时候是直接从delegate中去查询的，也就是从真正的缓存对象中查询
+        Object object = delegate.getObject(key);
+        // 如果不存在，则添加到 entriesMissedInCache 中
+        if (object == null) {
+            // 缓存未命中，则将 key 存入到 entriesMissedInCache 中
+            entriesMissedInCache.add(key);
+        }
+        // issue #146
+        // 如果clearOnCommit为true ，表示处于持续清空状态，则返回 null
+        if (clearOnCommit) {
+            return null;
+            // 返回 value
+        } else {
+            return object;
+        }
+    }
+  
+    @Override
+    public void putObject(Object key, Object object) {
+        // 将键值对存入到entriesToAddOnCommit这个Map中，而非真实的缓存对象delegate中
+        entriesToAddOnCommit.put(key, object);
+    }
+
+    public void commit() {
+        // 如果clearOnCommit为true ，则清空delegate缓存
+        if (clearOnCommit) {
+            delegate.clear();
+        }
+        // 将entriesToAddOnCommit、entriesMissedInCache 刷入delegate(cache) 中
+        flushPendingEntries();
+        // 重置
+        reset();
+    }
+  
+    /**
+     * 将entriesToAddOnCommit、entriesMissedInCache刷入delegate(二级缓存)中
+     */
+    private void flushPendingEntries() {
+        // 将entriesToAddOnCommit中的内容转存到delegate中
+        for (Map.Entry<Object, Object> entry : entriesToAddOnCommit.entrySet()) {
+
+            //在这里真正的将entriesToAddOnCommit的对象以此添加到delegate中，只有这时，二级缓存才真正的生效
+            delegate.putObject(entry.getKey(), entry.getValue());
+        }
+        // 将entriesMissedInCache刷入delegate中
+        for (Object entry : entriesMissedInCache) {
+            if (!entriesToAddOnCommit.containsKey(entry)) {
+                delegate.putObject(entry, null);
+            }
+        }
+    }
+
+}
+```
+
+**总结一下：**
+
+存储二级缓存对象的时候将对象放入了TransactionalCache.entriesToAddOnCommit这个Map中(但是每次查询的时候是直接从TransactionalCache.delegate中查询)，所以我们的测试案例一才会没有生效。
+
+但是当SqlSession提交或者关闭时，二级缓存就会生效，这时为什么呢？
+
+来看一看SqlSession得commit方法做了什么
+
+CahingExecutor#commit()
+
+```java
+
+    @Override
+    public void commit(boolean required) throws SQLException {
+        // 执行 delegate 对应的方法
+        delegate.commit(required);
+        // 提交 TransactionalCacheManager
+        tcm.commit();
+    }
+```
+
+TransactionalCacheManger#commit()
+
+```java
+    /**
+     * 提交所有 TransactionalCache
+     */
+    public void commit() {
+        for (TransactionalCache txCache : transactionalCaches.values()) {
+            txCache.commit();
+        }
+    }
+```
+
+TransactionalCache#commit()
+
+```java
+public void commit() {
+        // 如果clearOnCommit为true ，则清空delegate缓存
+        if (clearOnCommit) {
+            delegate.clear();
+        }
+        // 将entriesToAddOnCommit、entriesMissedInCache 刷入delegate(cache) 中
+        flushPendingEntries();
+        // 重置
+        reset();
+    }
+```
+
+再来看看flushPendingEntries方法
+
+```java
+/**
+     * 将entriesToAddOnCommit、entriesMissedInCache刷入delegate(二级缓存)中
+     */
+    private void flushPendingEntries() {
+        // 将entriesToAddOnCommit中的内容转存到delegate中
+        for (Map.Entry<Object, Object> entry : entriesToAddOnCommit.entrySet()) {
+
+            //在这里真正的将entriesToAddOnCommit的对象以此添加到delegate中，只有这时，二级缓存才真正的生效
+            delegate.putObject(entry.getKey(), entry.getValue());
+        }
+        // 将entriesMissedInCache刷入delegate中
+        for (Object entry : entriesMissedInCache) {
+            if (!entriesToAddOnCommit.containsKey(entry)) {
+                delegate.putObject(entry, null);
+            }
+        }
+    }
+```
+
+在本方法中才真正的将entriesToAddOnCommit的对象以此添加到delegate中，只有这时，二级缓存才真正的生效，由此也验证了我们的测试二案例。
+
+SqlSession的更新操作具体做了什么？
+
+CachingExecutor#update
+
+```java
+   @Override
+    public int update(MappedStatement ms, Object parameterObject) throws SQLException {
+        // 如果需要清空缓存，则进行清空
+        flushCacheIfRequired(ms);
+        // 执行 delegate 对应的方法
+        return delegate.update(ms, parameterObject);
+    }
+
+    /**
+     * 如果需要清空缓存，则进行清空
+     *
+     * @param ms MappedStatement 对象
+     */
+    private void flushCacheIfRequired(MappedStatement ms) {
+        Cache cache = ms.getCache();
+        if (cache != null && ms.isFlushCacheRequired()) { // 是否需要清空缓存
+            //重点！！！
+            tcm.clear(cache);
+        }
+    }
+
+```
+
+TransactionalCacheManager#clear()
+
+```java
+    /**
+     * 清空缓存
+     *
+     * @param cache Cache 对象
+     */
+    public void clear(Cache cache) {
+        getTransactionalCache(cache).clear();
+    }
+
+```
+
+TransactionalCache#clear()
+
+```java
+    @Override
+    public void clear() {
+        // 标记clearOnCommit为true
+        clearOnCommit = true;
+        // 清空entriesToAddOnCommit 清除缓存
+        entriesToAddOnCommit.clear();
+    }
+```
+
+由此会发现如果数据进行了变更MyBatis会清除缓存
 
 
 
+### 3.4 二级缓存和一级缓存谁先被执行呢？
+
+二级缓存-》一级缓存-》数据库
+
+查询逻辑如下：
+
+CachingExecutor#query()
+
+```java
+@Override
+public <E> List<E> query(MappedStatement ms, Object parameterObject, RowBounds rowBounds, ResultHandler resultHandler, CacheKey key, BoundSql boundSql)
+        throws SQLException {
+    Cache cache = ms.getCache();
+    if (cache != null) {
+        flushCacheIfRequired(ms);
+        //对应配置文件中的useCache 如果设置了useCache为true则走二级缓存
+        if (ms.isUseCache() && resultHandler == null) {
+            ensureNoOutParams(ms, boundSql);
+            @SuppressWarnings("unchecked")
+            // 从二级缓存中，获取结果
+            List<E> list = (List<E>) tcm.getObject(cache, key);
+            if (list == null) {
+                // 如果没有值，则执行查询，这个查询实际也是先走一级缓存查询，一级缓存也没有的话，则进行DB查询
+                list = delegate.query(ms, parameterObject, rowBounds, resultHandler, key, boundSql);
+                // 缓存查询结果
+                tcm.putObject(cache, key, list); // issue #578 and #116
+            }
+            // 如果存在，则直接返回结果
+            return list;
+        }
+    }
+    // 不使用缓存，则从数据库中查询(如果不是第一次查会查一级缓存)
+    return delegate.query(ms, parameterObject, rowBounds, resultHandler, key, boundSql);
+}
+```
+
+如果二级缓存关闭，直接判断一级缓存是否有数据，如果没有就查数据库
+
+如果二级缓存开启，先判断二级缓存有没有数据，如果有就直接返回；如果没有，就查询一级缓存，如果有就返回，没有就查询数据库
+
+### 3.5 总结
+
+1. MyBatis二级缓存并不适用于经常增删改的数据，一旦数据变更二级缓存就会别MyBatis清空销毁。
+2. 虽然二级缓存相对于一级缓存SqlSession之间共享缓存数据的粒度更细，可以达到namespace级别，但在二级缓存的作用域下一个Mapper文件，也就是一个namespace下所有的sqlSession都共用二级缓存，虽然可以解决一级缓存的脏读问题，但是并不能解决本身访问两个不同的Mapper存在的脏读问题（因为在二级缓存也是基于本地实现的（数据结构HashMap））。
+3. 所以在工作中并不建议开启二级缓存。可以将MyBatis当做一个单纯的ORM框架使用
 
 
 
+**不过话又说回来，虽然MyBatis的缓存机制有些鸡肋，但是并不妨碍它是一个优秀的开源框架，设计的相当优美，代码量也是很多，适合阅读学习。**
 
 
+
+到此为止，先从缓存存在的意义说起，并从单元测试作为入口点出发，阅读MyBatis源码证明了关于一级缓存和二级缓存的猜想，总结了MyBatis缓存机制的不足。
+
+>撒花🌹🌹🌹🌹但未完结，下一篇文章，让我们对延迟加载原理进行剖析。
+
+## 预告
+
+下篇文章：🏆延迟加载原理剖析
+
+**本文已收录到CodeWars系列，欢迎各位Star，持续输出高质量技术文章**
+[链接点我！](https://gitee.com/Ryan_ma/CodeWars)
+
+**更多技术文章，请关注公众号，让我们一起进步吧！**
+
+![](https://img-blog.csdnimg.cn/2020120416583873.png#pic_center#pic_center)
+
+![在这里插入图片描述](https://img-blog.csdnimg.cn/15fe47205ba64925a4c71b7a2f61f452.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM1NDE2MjE0,size_16,color_FFFFFF,t_70)
 
