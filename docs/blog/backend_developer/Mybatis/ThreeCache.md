@@ -1171,7 +1171,7 @@ public <E> List<E> query(MappedStatement ms, Object parameterObject, RowBounds r
 
 
 
-**不过话又说回来，虽然MyBatis的缓存机制有些鸡肋，但是并不妨碍它是一个优秀的开源框架，设计的相当优美，代码量也是很多，适合阅读学习。**
+**不过话又说回来，虽然MyBatis的缓存机制有些鸡肋，但是并不妨碍它是一个优秀的开源框架，设计的相当优美，代码量也不是很多，适合阅读学习。**
 
 
 
