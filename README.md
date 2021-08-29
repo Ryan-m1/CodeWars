@@ -23,7 +23,7 @@
 
     - [✅浅析MyBatis执行SQL流程](docs/blog/backend_developer/Mybatis/ExecuteSQL.md)
     - [✅深入浅出MyBatis缓存机制](docs/blog/backend_developer/Mybatis/ThreeCache.md)
-    - [❎~~延迟加载原理剖析~~](docs/blog/backend_developer/Mybatis/LazyLoading.md)
+    - [✅延迟加载原理剖析](docs/blog/backend_developer/Mybatis/LazyLoading.md)
     - [❎~~MyBatis设计模式~~](docs/blog/backend_developer/Mybatis/DesignPattern.md)
     - [❎~~手撸简易版MBatis~~](docs/blog/backend_developer/Mybatis/MBatis.md)
 
