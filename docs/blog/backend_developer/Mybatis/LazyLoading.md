@@ -112,7 +112,7 @@ public void TEST_QUERY_LAZY()throws IOException{
 
 下面将对源码进行阅读，剖析Mybatis延迟加载的原理。
 
-在MyBatis系列文章第一篇[浅析MyBatis执行SQL流程](ExecuteSQL.md)
+在MyBatis系列文章第一篇[浅析MyBatis执行SQL流程](ExecuteSQL)
 就对SQL的执行流程进行了讲解。简单复习一下大致流程，SQL查询语句的执行是由SqlSession分发交由Executor托管执行，调度StatementHandler负责JDBC
 statement操作，之后下发给ParameterHandler负责对用户传递参数进行转化处理SQL参数，再接着执行SQL语句，最后通过ResultSetHandler对返回结果进行封装处理返回。
 
