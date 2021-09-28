@@ -927,7 +927,7 @@ mapperMethod.execute方法实际做的就是“分发”的一个过程，根据
 
 
 **本文已收录到CodeWars系列，欢迎各位Star，持续输出高质量技术文章**
-[链接点我！](https://gitee.com/Ryan_ma/CodeWars)
+[链接点我！](https://gitee.com/effective-java/CodeWars)
 
 
 **更多技术文章，请关注公众号，让我们一起进步吧！**
