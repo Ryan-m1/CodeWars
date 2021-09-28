@@ -1,6 +1,6 @@
 # Description
 
-[链接在此！Gitee Pages！]( https://ryan_ma.gitee.io/codewars)
+[链接在此！Gitee Pages！]( https://effective-java.gitee.io/codewars)
 
 [链接在此！Github Pages！]( https://ryan-m1.github.io/CodeWars/#/)
 
