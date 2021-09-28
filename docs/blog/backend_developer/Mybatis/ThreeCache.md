@@ -1184,7 +1184,7 @@ public <E> List<E> query(MappedStatement ms, Object parameterObject, RowBounds r
 下篇文章：🏆延迟加载原理剖析
 
 **本文已收录到CodeWars系列，欢迎各位Star，持续输出高质量技术文章**
-[链接点我！](https://gitee.com/Ryan_ma/CodeWars)
+[链接点我！](https://gitee.com/effective-java/CodeWars)
 
 **更多技术文章，请关注公众号，让我们一起进步吧！**
 
