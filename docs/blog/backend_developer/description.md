@@ -35,8 +35,8 @@
     - [❎~~手撸简易版Tomcat~~]()
 
 * **Cluster模式潜在问题及解决方案**
-    - [❎~~一致性Hash~~]()
-    - [❎~~分布式集群始终同步~~]()
+    - [✅一致性Hash](/blog/backend_developer/Cluster/ConsistentHashing.md)
+    - [❎~~分布式集群时钟同步~~]()
     - [❎~~分布式ID~~]()
     - [❎~~分布式调度~~]()
     - [❎~~Session一致性~~]()
