@@ -93,7 +93,7 @@ public class ConsistentHashing {
         this.virtualCount = virtualCount;
     }
 
-    public void hash() {
+    public void dispatch() {
         //step1 初始化：把服务器节点IP的哈希值对应到哈希环上 ip网段相同路由到同一机房
         // 定义服务器ip
         String[] tomcatServers = tomcatServer.getTomcatServerIps();
@@ -146,7 +146,7 @@ public class Main {
         Client client = new Client(new String[]{"123.111.0.0", "123.111.0.1", "111.20.35.2", "123.98.26.3"});
         TomcatServer tomcatServer = new TomcatServer(new String[]{"10.78.12.3", "113.25.63.1", "126.12.3.8", "10.79.211.10"});
         ConsistentHashing consistentHashing = new ConsistentHashing(tomcatServer, client, 3);
-        consistentHashing.hash();
+        consistentHashing.dispatch();
     }
 }
 
