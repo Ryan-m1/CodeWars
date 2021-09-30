@@ -23,20 +23,21 @@ Client
  */
 public class Client {
 
-    private String[] clientIps;
+    private List<String> clientIps;
 
-    public Client(String[] clients) {
-        this.clientIps = clients;
-    }
-
-    public String[] getClientIps() {
+    public List<String> getClientIps() {
         return clientIps;
     }
 
-    public void setClientIps(String[] clientIps) {
+    public void setClientIps(List<String> clientIps) {
+        this.clientIps = clientIps;
+    }
+
+    public Client(List<String> clientIps) {
         this.clientIps = clientIps;
     }
 }
+
 
 ```
 
@@ -51,21 +52,20 @@ TomcatServer
  */
 public class TomcatServer {
 
-    private String[] tomcatServerIps;
+    private List<String> tomcatServerIps;
 
-    public TomcatServer(String[] tomcatServerIps) {
-        this.tomcatServerIps = tomcatServerIps;
-    }
-
-    public String[] getTomcatServerIps() {
+    public List<String> getTomcatServerIps() {
         return tomcatServerIps;
     }
 
-    public void setTomcatServerIps(String[] tomcatServerIps) {
+    public void setTomcatServerIps(List<String> tomcatServerIps) {
+        this.tomcatServerIps = tomcatServerIps;
+    }
+
+    public TomcatServer(List<String> tomcatServerIps) {
         this.tomcatServerIps = tomcatServerIps;
     }
 }
-
 ```
 
 ConsistentHashing
@@ -84,6 +84,8 @@ public class ConsistentHashing {
 
     private Client client;
 
+    private SortedMap<Integer, String> hashServerMap;
+
     // 定义针对每个真实服务器虚拟出来几个节点
     private int virtualCount;
 
@@ -91,14 +93,14 @@ public class ConsistentHashing {
         this.tomcatServer = tomcatServer;
         this.client = client;
         this.virtualCount = virtualCount;
+        hashServerMap = new TreeMap<>();
+        init();
     }
 
-    public void dispatch() {
+    private void init() {
         //step1 初始化：把服务器节点IP的哈希值对应到哈希环上 ip网段相同路由到同一机房
         // 定义服务器ip
-        String[] tomcatServers = tomcatServer.getTomcatServerIps();
-        SortedMap<Integer, String> hashServerMap = new TreeMap<>();
-        for (String tomcatServer : tomcatServers) {
+        for (String tomcatServer : tomcatServer.getTomcatServerIps()) {
             // 求出每一个ip的hash值，对应到hash环上，存储hash值与ip的对应关系
             int serverHash = Math.abs(tomcatServer.hashCode());
             // 存储hash值与ip的对应关系
@@ -109,10 +111,13 @@ public class ConsistentHashing {
                 hashServerMap.put(virtualHash, "----由虚拟节点" + i + "映射过来的请求：" + tomcatServer);
             }
         }
+    }
+
+    public List<String> dispatchAll() {
+        List<String> route = new ArrayList<>();
         //step2 针对客户端IP求出hash值
         // 定义客户端IP
-        String[] clients = client.getClientIps();
-        for (String client : clients) {
+        for (String client : client.getClientIps()) {
             int clientHash = Math.abs(client.hashCode());
             //step3 针对客户端,找到能够处理当前客户端请求的服务器（哈希环上顺时针最近）
             // 根据客户端ip的哈希值去找出哪一个服务器节点能够处理
@@ -120,18 +125,39 @@ public class ConsistentHashing {
             if (integerStringSortedMap.isEmpty()) {
                 // 取哈希环上的顺时针第一台服务器
                 Integer firstKey = hashServerMap.firstKey();
-                System.out.println("==========>>>>客户端：" + client + " 被路由到服务器：" + hashServerMap.get(firstKey));
+                route.add("==========>>>>客户端：" + client + " 被路由到服务器：" + hashServerMap.get(firstKey));
             } else {
                 Integer firstKey = integerStringSortedMap.firstKey();
-                System.out.println("==========>>>>客户端：" + client + " 被路由到服务器：" + hashServerMap.get(firstKey));
+                route.add("==========>>>>客户端：" + client + " 被路由到服务器：" + hashServerMap.get(firstKey));
             }
         }
+        return route;
     }
 
-
+    public String dispatch(String clientIp) {
+        if (!client.getClientIps().contains(clientIp)) {
+            return "不包含节点【" + clientIp + "】实例";
+        }
+        //step2 针对客户端IP求出hash值
+        // 定义客户端IP
+        int clientHash = Math.abs(clientIp.hashCode());
+        //step3 针对客户端,找到能够处理当前客户端请求的服务器（哈希环上顺时针最近）
+        // 根据客户端ip的哈希值去找出哪一个服务器节点能够处理
+        SortedMap<Integer, String> integerStringSortedMap = hashServerMap.tailMap(clientHash);
+        if (integerStringSortedMap.isEmpty()) {
+            // 取哈希环上的顺时针第一台服务器
+            Integer firstKey = hashServerMap.firstKey();
+            return "==========>>>>客户端：" + clientIp + " 被路由到服务器：" + hashServerMap.get(firstKey);
+        } else {
+            Integer firstKey = integerStringSortedMap.firstKey();
+            return "==========>>>>客户端：" + clientIp + " 被路由到服务器：" + hashServerMap.get(firstKey);
+        }
+    }
 }
 ```
+
 Main
+
 ```java
 
 /**
@@ -143,10 +169,16 @@ Main
 public class Main {
 
     public static void main(String[] args) {
-        Client client = new Client(new String[]{"123.111.0.0", "123.111.0.1", "111.20.35.2", "123.98.26.3"});
-        TomcatServer tomcatServer = new TomcatServer(new String[]{"10.78.12.3", "113.25.63.1", "126.12.3.8", "10.79.211.10"});
+        Client client = new Client(Arrays.asList("123.111.0.0", "123.111.0.1", "111.20.35.2", "123.98.26.3"));
+        TomcatServer tomcatServer = new TomcatServer(Arrays.asList("10.78.12.3", "113.25.63.1", "126.12.3.8", "10.79.211.10"));
         ConsistentHashing consistentHashing = new ConsistentHashing(tomcatServer, client, 3);
-        consistentHashing.dispatch();
+        System.out.println("dispatchAll");
+        for (String ans : consistentHashing.dispatchAll()) {
+            System.out.println(ans);
+        }
+        System.out.println("dispatch");
+        System.out.println(consistentHashing.dispatch("123.111.0.0"));
+        System.out.println(consistentHashing.dispatch("1.1.1.1"));
     }
 }
 
