@@ -151,4 +151,5 @@ public class Main {
 }
 
 ```
-![image-20210929123123123123.png](img.png)
+
+![image-20210929123123123123.png](img/image-20210929123123123123.png)

@@ -30,7 +30,7 @@
 
 **重点来喽**，MyBatis架构师如何设计的
 
-![](https://img-blog.csdnimg.cn/31de983d94854a809c8edb21e8181546.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM1NDE2MjE0,size_16,color_FFFFFF,t_70)
+![](img/image-20210829012312123.png)
 
 Mybatis的功能架构分为三层：
 
@@ -46,7 +46,7 @@ Mybatis的功能架构分为三层：
 
 ### 主要组件及其相互关系
 
-![](https://img-blog.csdnimg.cn/f7c061fc7d97485d87a702b280d050c7.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM1NDE2MjE0,size_16,color_FFFFFF,t_70)
+![](img/image-20210829012312124.png)
 
 上述层次图中涉及到的重要模块，下述详细说明：
 ```
@@ -723,7 +723,7 @@ StatementHandler对象封装了JDBC Statement操作，负责对JDBC statement的
 
 **不知道大家还记不记得文章开头我们引出了一张图，在此进行完源码剖析之后，再回味这张图，思考一下会不会有恍然大悟的感觉。**
 
-![](https://img-blog.csdnimg.cn/f7c061fc7d97485d87a702b280d050c7.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM1NDE2MjE0,size_16,color_FFFFFF,t_70)
+![](img/image-20210829012312124.png)
 
 ***
 
