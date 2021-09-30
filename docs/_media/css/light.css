@@ -1,0 +1,95 @@
+section.cover .cover-main {
+    z-index: 100;
+}
+section.cover.has-mask .mask {
+    background-color: #dedede;
+    opacity: .1!important;
+    position: absolute;
+    top: 0;
+    height: 100%;
+    width: 100%;
+}
+
+section.cover p{
+    color: #ffffff;
+    font-size: 25px;
+    font-family: "Yu Gothic UI Semilight";
+}
+
+element.style {
+    background-color: var(--theme-color, #42b983);
+    color: #ffffff;
+    font-family: 'Lobster', cursive;
+}
+
+* {
+    -webkit-font-smoothing: antialiased;
+    -webkit-overflow-scrolling: touch;
+    -webkit-tap-highlight-color: rgba(0,0,0,0);
+    -webkit-text-size-adjust: none;
+    -webkit-touch-callout: none;
+    box-sizing: border-box;
+    font-family: "Yu Gothic UI Semilight";
+}
+
+user agent stylesheet
+li {
+    display: list-item;
+    text-align: -webkit-match-parent;
+}
+
+section.cover .cover-main > p:last-child a {
+    color: #fff;
+    border-color: var(--theme-color, #afffd8);
+    border-radius: 2rem;
+    border-style: solid;
+    border-width: 2px;
+    box-sizing: border-box;
+    display: inline-block;
+    font-size: 1.05rem;
+    letter-spacing: 0.1rem;
+    margin: 0.5rem 1rem;
+    padding: 0.75em 2rem;
+    text-decoration: none;
+    transition: all 0.15s ease;
+}
+
+section.cover ul{
+    font-family: 'Lobster', cursive;
+    color: rgba(255, 255, 255, 0.49);
+    font-size: 18px;
+}
+
+section.cover h1 .anchor span {
+    font-family: 'Lobster', cursive;
+    color: rgba(187, 0, 0, 0.55);
+    font-size: 50px;
+}
+
+section.cover .cover-main > p:last-child a:last-child {
+    background-color: var(--theme-color, rgba(66, 185, 131, 0.82));
+    color: rgba(255, 255, 255, 0.71);
+}
+
+section.cover h2 .anchor span {
+    font-family: 'Lobster', cursive;
+    font-size: 24px;
+    color: var(--theme-color);
+}
+
+section.cover .cover-main > p:last-child a .iconfont {
+    font-size: 2em;
+}
+
+.sidebar > h1 a {
+    font-family: 'Lobster', cursive;
+}
+
+.sidebar ul li a {
+    color: #383838;
+    font-size: 14px;
+    overflow: hidden;
+    text-decoration: none;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
