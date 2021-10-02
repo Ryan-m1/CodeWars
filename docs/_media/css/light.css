@@ -10,6 +10,16 @@ section.cover.has-mask .mask {
     width: 100%;
 }
 
+.sidebar ul li a {
+    letter-spacing: 2px;
+}
+
+.markdown-section a {
+    color: var(--theme-color, #42b983);
+    font-weight: 600;
+    letter-spacing: 2px;
+}
+
 section.cover p{
     color: #ffffff;
     font-size: 25px;
