@@ -1,10 +1,10 @@
 # ✍分布式调度
 
-## 何为分布式调度
+## 1. 何为分布式调度
 
-## 分布式调度框架-》Quartz
+## 2. 分布式调度框架-》Quartz
 
-### 如何使用Quartz
+### 2.1 如何使用Quartz
 
 AbstractQuartz
 
@@ -263,12 +263,12 @@ public class Test {
 
 ![image-20211003234554127](img/image-20211003234554127.png)
 
-### Quartz实现原理
+### 2.2 Quartz实现原理
 
-## 分布式调度框架-》elastic-job
+## 3. 分布式调度框架-》elastic-job
 
-### 如何使用elastic-job
+### 3.1 如何使用elastic-job
 
-### elastic-job的实现原理
+### 3.2 elastic-job的实现原理
 
-## 总结
+## 4. 总结
