@@ -150,7 +150,12 @@ listenPort=20910
 
 至此本文RocketMQ源码阅读环境搭建就结束了
 
+***
 
+最后附上作者搭建的RocketMQ源码阅读环境Gitee地址，便于大家clone下来翻看
+[Gitee连接](https://gitee.com/M-Analysis/rocket-mq)
+
+***
 
 **本文已收录到CodeWars系列，欢迎各位Star，持续输出高质量技术文章**
 [链接点我！](https://gitee.com/effective-java/CodeWars)
