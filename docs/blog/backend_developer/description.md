@@ -65,9 +65,10 @@
     - [✖ ~~Redis分布式高可用方案~~]()
 
 * **分布式消息服务中间件**
+    - [✅ RocketMQ源码阅读环境搭建](/blog/backend_developer/MessageDiddleware/RocketMQSourceSpace.md)
     - [✖ ~~RabbitMQ相关~~]()
     - [✖ ~~Kafka相关~~]()
-    - [✖ ~~RocketMQ相关~~]()
+
 
 * **分布式实时流式计算引擎**
     - [✖ ~~Flink相关~~]()
