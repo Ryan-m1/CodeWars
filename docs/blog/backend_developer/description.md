@@ -4,11 +4,11 @@
 
 * **MyBatis**
 
-    - [✅ 浅析MyBatis执行SQL流程](/blog/backend_developer/Mybatis/ExecuteSQL.md)
-    - [✅ 深入浅出MyBatis缓存机制](/blog/backend_developer/Mybatis/ThreeCache.md)
-    - [✅ 延迟加载原理剖析](/blog/backend_developer/Mybatis/LazyLoading.md)
-    - [✖ ~~MyBatis设计模式~~](/blog/backend_developer/Mybatis/DesignPattern.md)
-  
+    - [✅ 浅析MyBatis执行SQL流程](/blog/backend_developer/mybatis/ExecuteSQL.md)
+    - [✅ 深入浅出MyBatis缓存机制](/blog/backend_developer/mybatis/ThreeCache.md)
+    - [✅ 延迟加载原理剖析](/blog/backend_developer/mybatis/LazyLoading.md)
+    - [✖ ~~MyBatis设计模式~~](/blog/backend_developer/mybatis/DesignPattern.md)
+
 * **Spring**
     - [✖ ~~IOC容器设计源码剖析~~]()
     - [✖ ~~AOP源码剖析~~]()
@@ -73,10 +73,7 @@
 * **分布式实时流式计算引擎**
     - [✖ ~~Flink相关~~]()
 
-
 * **基础中的基础**
-    - [✖ ~~数据结构相关~~]()
-    - [✖ ~~算法相关~~]()
     - [✖ ~~高并发相关~~]()
     - [✖ ~~JVM相关~~]()
     - [✖ ~~Linux相关~~]()

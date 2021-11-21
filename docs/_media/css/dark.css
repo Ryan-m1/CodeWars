@@ -2,6 +2,10 @@ section.cover .cover-main {
     z-index: 100;
 }
 
+img {
+    max-width: 25%;
+}
+
 section.cover.has-mask .mask {
     background-color: #dedede;
     opacity: .1 !important;

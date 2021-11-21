@@ -1,6 +1,6 @@
 # 🏆深入浅出MyBatis缓存机制
 
-
+> [👈返回本系列目录](/blog/backend_developer/mybatis/description.md)
 
 # 1. 缓存的意义
 
@@ -80,7 +80,7 @@ MyBatis提供了三级缓存机制，虽然MyBatis的缓存机制有些鸡肋，
 
 一起走进源码的世界
 
-上文我们探究了MyBatis执行SQL语句的流程 [原文链接](/docs/blog/backend_developer/Mybatis/ExecuteSQL.md)，虽然当时仅仅只是提了一嘴缓存相关，但是却提供了一个入口点，那就是SqlSession#selectList()-》DefaultSqlSession#selectList()-》Executor#query()-》BaseExecutor#query()
+上文我们探究了MyBatis执行SQL语句的流程 [原文链接](/docs/blog/backend_developer/mybatis/ExecuteSQL.md)，虽然当时仅仅只是提了一嘴缓存相关，但是却提供了一个入口点，那就是SqlSession#selectList()-》DefaultSqlSession#selectList()-》Executor#query()-》BaseExecutor#query()
 
 ```java
     //此方法在SimpleExecutor的父类BaseExecutor中实现
@@ -666,7 +666,7 @@ MyBatis提供了二级缓存，不过二级缓存不是默认开启的，若需�
 
 ## 3.3 源码分析
 
-在上文[原文链接](/docs/blog/backend_developer/Mybatis/ExecuteSQL.md)分析SQL语句执行的过程中，我们了解了配置文件的加载和解析，其中缓存相关并没有去做说明，在本文会详细说明。
+在上文[原文链接](/docs/blog/backend_developer/mybatis/ExecuteSQL.md)分析SQL语句执行的过程中，我们了解了配置文件的加载和解析，其中缓存相关并没有去做说明，在本文会详细说明。
 
 其中xml解析工作实际上是交给XMLConfigBuilder#parse()方法实现,其中对配置文件中缓存相关的解析逻辑如下XMLConfigBuilder#cacheElement()
 

@@ -11,9 +11,9 @@
 
 **🌞捕捉生活中美好瞬间，记录于此**
 
-**😉不过分的追求时间的积累，更要有耐心的进行实践和复盘，坚持刻意练习**
+**🔥不过分的追求时间的积累，更要有耐心的进行实践和复盘，坚持刻意练习**
 
-![](docs/_media/img/bg2.png ':size=80%')
+![](docs/_media/img/bg2.png)
 
 **进度如下。。。**
 
@@ -21,11 +21,11 @@
 
 * **MyBatis**
 
-    - [✅浅析MyBatis执行SQL流程](docs/blog/backend_developer/Mybatis/ExecuteSQL.md)
-    - [✅深入浅出MyBatis缓存机制](docs/blog/backend_developer/Mybatis/ThreeCache.md)
-    - [✅延迟加载原理剖析](docs/blog/backend_developer/Mybatis/LazyLoading.md)
-    - [✖~~MyBatis设计模式~~](docs/blog/backend_developer/Mybatis/DesignPattern.md)
-    - [✖~~手撸简易版MBatis~~](docs/blog/backend_developer/Mybatis/MBatis.md)
+    - [✅浅析MyBatis执行SQL流程](docs/blog/backend_developer/mybatis/ExecuteSQL.md)
+    - [✅深入浅出MyBatis缓存机制](docs/blog/backend_developer/mybatis/ThreeCache.md)
+    - [✅延迟加载原理剖析](docs/blog/backend_developer/mybatis/LazyLoading.md)
+    - [✖~~MyBatis设计模式~~](docs/blog/backend_developer/mybatis/DesignPattern.md)
+    - [✖~~手撸简易版MBatis~~](docs/blog/backend_developer/mybatis/MBatis.md)
 
 * **Spring**
     - [✖~~IOC容器设计源码剖析~~]()
@@ -52,7 +52,7 @@
     - [✖~~手撸简易版Tomcat~~]()
 
 * **Cluster模式潜在问题及解决方案**
-    - [✅一致性Hash](docs/blog/backend_developer/Cluster/ConsistentHashing.md)
+    - [✅一致性Hash](docs/blog/backend_developer/cluster/ConsistentHashing.md)
     - [✖~~分布式集群始终同步~~]()
     - [✖~~分布式ID~~]()
     - [✖~~分布式调度~~]()

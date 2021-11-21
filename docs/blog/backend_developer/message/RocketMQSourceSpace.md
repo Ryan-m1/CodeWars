@@ -1,5 +1,7 @@
 # 😆RocketMQ源码阅读环境搭建
 
+> [👈返回本系列目录](/blog/backend_developer/message/description.md)
+
 # 1.教程开始
 
 ## 1.1 拉取代码
@@ -20,13 +22,9 @@ git clone https://github.com/apache/rocketmq.git
 
 下载依赖，耐心等待即可
 
-
-
 ## 1.2准备配置文件
 
 本步需要修改源码中日志配置文件指定路径，避免直接修改源文件，选择新建目录用于存放日志配置文件。
-
-
 
 1） 在项目跟目录下面新建一个conf文件夹(用来存放日志配置文件)。将跟项目下的distribution模块的conf目录中的logback_broker.xml，logback_namesrv.xml拷贝到刚新建的conf目录下
 
@@ -43,8 +41,6 @@ git clone https://github.com/apache/rocketmq.git
 logs目录用于存放日志
 
 store目录用于存放消息队列产生的数据
-
-
 
 ## 1.3 修改配置文件
 
@@ -71,8 +67,6 @@ logback_broker.xml其中一行需要修改的配置信息
 ![image-20211014000019948](img/image-20211014000019948.png)
 
 注意logback_broker.xml和logback_namesrv.xml都需要修改指定在我们新建的目录下
-
-
 
 ## 1.4 配置IDEA环境变量 启动Namesrv
 
@@ -109,8 +103,6 @@ working directory修改为本地项目根目录即可
 localhost:9876
 ```
 
-
-
 为此我们需要在broker-a.properties配置文件中指定数据路径和端口
 
 ![image-20211014001229393](img/image-20211014001229393.png)
@@ -136,8 +128,6 @@ listenPort=20910
 
 可以看到Master我设置的是20910而Slaver我设置的是20920
 
-
-
 ## 1.5 启动Broker
 
 ![image-20211014001843738](img/image-20211014001843738.png)
@@ -159,7 +149,6 @@ listenPort=20910
 
 **本文已收录到CodeWars系列，欢迎各位Star，持续输出高质量技术文章**
 [链接点我！](https://gitee.com/effective-java/CodeWars)
-
 
 **更多技术文章，请关注公众号，让我们一起进步吧！**
 
