@@ -31,11 +31,11 @@
     - [✖ ~~教你搞定Nginx~~]()
 
 * **Cluster模式潜在问题及解决方案**
-    - [✅ 一致性Hash](/blog/backend_developer/Cluster/ConsistentHashing.md)
-    - [✖ ~~分布式集群时钟同步~~](/blog/backend_developer/Cluster/DistributedTimeSync.md)
-    - [✖ ~~分布式ID~~](/blog/backend_developer/Cluster/DistributedID.md)
-    - [✖ ~~分布式调度~~](/blog/backend_developer/Cluster/DistributedDispatch.md)
-    - [✖ ~~Session一致性~~](/blog/backend_developer/Cluster/ConsistenSession.md)
+    - [✅ 一致性Hash](/blog/backend_developer/cluster/ConsistentHashing.md)
+    - [✖ ~~分布式集群时钟同步~~](/blog/backend_developer/cluster/DistributedTimeSync.md)
+    - [✖ ~~分布式ID~~](/blog/backend_developer/cluster/DistributedID.md)
+    - [✖ ~~分布式调度~~](/blog/backend_developer/cluster/DistributedDispatch.md)
+    - [✖ ~~Session一致性~~](/blog/backend_developer/cluster/ConsistenSession.md)
 
 
 * **Web安全**
@@ -46,7 +46,7 @@
 ### 深入浅出分布式架构设计&微服务<!-- {docsify-ignore} -->
 
 * **RPC**
-    - [✅ 分布式理论与分布式架构设计理论](/blog/backend_developer/RPC/DistributedArchitectureDesignTheory.md)
+    - [✅ 分布式理论与分布式架构设计理论](/blog/backend_developer/rpc/DistributedArchitectureDesignTheory.md)
     - [✖ ~~Netty~~]()
     - [✖ ~~高性能RPC框架Apache Dubbo~~]()
 
@@ -65,7 +65,7 @@
     - [✖ ~~Redis分布式高可用方案~~]()
 
 * **分布式消息服务中间件**
-    - [✅ RocketMQ源码阅读环境搭建](/blog/backend_developer/MessageDiddleware/RocketMQSourceSpace.md)
+    - [✅ RocketMQ源码阅读环境搭建](/blog/backend_developer/message/RocketMQSourceSpace.md)
     - [✖ ~~RabbitMQ相关~~]()
     - [✖ ~~Kafka相关~~]()
 
